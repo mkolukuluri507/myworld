@@ -139,7 +139,7 @@ class BackendTester:
             "message": ""
         }
         
-        response = await self.make_request("POST", "/contact", invalid_data)
+        response = await self.make_request("POST", "/contact/", invalid_data)
         
         if response["status"] in [400, 422]:  # Validation error expected
             self.log_result("Contact Form Validation", True, "Properly rejected invalid data")
