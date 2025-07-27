@@ -1,11 +1,48 @@
 import React from 'react';
 import { Download, ArrowRight } from 'lucide-react';
+import { filesApi } from '../services/api';
+import { notifyDownloadStarted, notifyDownloadError } from '../utils/notifications';
 
 const Hero = () => {
-  const handleDownloadResume = () => {
-    // Mock download - will be implemented with backend
-    console.log('Downloading resume...');
-    alert('Resume download will be implemented with backend integration');
+  const handleDownloadResume = async () => {
+    try {
+      notifyDownloadStarted();
+      
+      // Get the file from backend
+      const response = await filesApi.downloadResume();
+      
+      // Create blob URL and trigger download
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] || 'application/pdf' 
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Get filename from response headers or use default
+      const contentDisposition = response.headers['content-disposition'];
+      let filename = 'mourya-varma-resume.pdf';
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Resume download failed:', error);
+      notifyDownloadError();
+    }
   };
 
   const scrollToAbout = () => {
