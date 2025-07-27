@@ -338,7 +338,7 @@ class BackendTester:
             "session_id": "test-session-123"
         }
         
-        response = await self.make_request("POST", "/chat", chat_data)
+        response = await self.make_request("POST", "/chat/", chat_data)
         
         if response["status"] == 200:
             data = response["data"]
