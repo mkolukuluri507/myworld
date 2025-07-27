@@ -5,11 +5,9 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field
-from typing import List
-import uuid
-from datetime import datetime
 
+# Import route modules
+from routes import contact, portfolio, chat, files
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -17,44 +15,53 @@ load_dotenv(ROOT_DIR / '.env')
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ.get('DB_NAME', 'portfolio_db')]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Create the main app
+app = FastAPI(title="Mourya Varma Portfolio API", version="1.0.0")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Set database for route modules
+contact.set_database(db)
+portfolio.set_database(db)
+chat.set_database(db)
 
-# Define Models
-class StatusCheck(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+# Include route modules
+api_router.include_router(contact.router)
+api_router.include_router(portfolio.router)
+api_router.include_router(chat.router)
+api_router.include_router(files.router)
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+# Health check endpoint
+@api_router.get("/health")
+async def health_check():
+    return {
+        "status": "healthy",
+        "service": "Mourya Varma Portfolio API",
+        "version": "1.0.0"
+    }
 
-# Add your routes to the router instead of directly to app
+# Root endpoint
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.dict()
-    status_obj = StatusCheck(**status_dict)
-    _ = await db.status_checks.insert_one(status_obj.dict())
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    status_checks = await db.status_checks.find().to_list(1000)
-    return [StatusCheck(**status_check) for status_check in status_checks]
+    return {
+        "message": "Mourya Varma Portfolio API",
+        "version": "1.0.0",
+        "endpoints": {
+            "contact": "/api/contact",
+            "portfolio": "/api/portfolio", 
+            "chat": "/api/chat",
+            "files": "/api/files",
+            "health": "/api/health"
+        }
+    }
 
 # Include the router in the main app
 app.include_router(api_router)
 
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -70,6 +77,29 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database connection and run seeding if needed"""
+    logger.info("Starting Portfolio API server...")
+    
+    # Test database connection
+    try:
+        await db.command("ping")
+        logger.info("Successfully connected to MongoDB")
+    except Exception as e:
+        logger.error(f"Failed to connect to MongoDB: {e}")
+        raise
+    
+    # Run database seeding
+    try:
+        from data.seed_database import seed_database
+        await seed_database()
+        logger.info("Database seeding completed")
+    except Exception as e:
+        logger.warning(f"Database seeding failed (this may be normal): {e}")
+
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_event():
+    """Close database connection"""
+    logger.info("Shutting down Portfolio API server...")
     client.close()
