@@ -120,7 +120,7 @@ class BackendTester:
             "message": "Hi Mourya, I came across your portfolio and I'm impressed with your work in backend development and data engineering. I'd like to discuss a potential collaboration opportunity on a project involving real-time data processing with Apache Kafka. Would you be interested in connecting?"
         }
         
-        response = await self.make_request("POST", "/contact", contact_data)
+        response = await self.make_request("POST", "/contact/", contact_data)
         
         if response["status"] == 200:
             data = response["data"]
