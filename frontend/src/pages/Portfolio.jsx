@@ -8,6 +8,7 @@ import Certifications from '../components/Certifications';
 import Gallery from '../components/Gallery';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
+import { Toaster } from '../components/ui/toaster';
 
 const Portfolio = () => {
   return (
@@ -37,6 +38,9 @@ const Portfolio = () => {
         <Contact />
         <Footer />
       </div>
+      
+      {/* Toast notifications */}
+      <Toaster />
     </div>
   );
 };
