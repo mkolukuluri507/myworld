@@ -1,0 +1,24 @@
+
+Mourya Varma - Software Engineer & Aspiring Data Engineer
+
+Contact: varmamourya3@gmail.com
+LinkedIn: https://linkedin.com/in/mourya-varma
+GitHub: https://github.com/mouryavarma
+
+EXPERIENCE:
+• 3+ years in Backend Development (Java, Spring Boot)
+• REST API design and WMS systems
+• Real-time data processing with Kafka
+
+CURRENT LEARNING:
+• Apache Spark, Hadoop, Apache Airflow
+• Cloud platforms: GCP, Azure
+• Generative AI & Agentic AI
+
+CERTIFICATIONS:
+• Programming in Java (NPTEL)
+• Programming in Python (NPTEL)  
+• AWS Academy Cloud Foundations
+
+Please contact directly for detailed resume.
+            
